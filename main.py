@@ -58,22 +58,26 @@ async def generate_song_base64(
         if len(processed_lyrics.split()) < 5:
             processed_lyrics = f"♪ {processed_lyrics} ♪\n" * 2
         
-        response = client.generate(
+        # Generate audio using ElevenLabs
+        audio = client.text_to_speech.convert(
+            voice_id="MUMZpJj46Atf8HF4CyAx",
+            model_id="eleven_multilingual_v2",  
             text=processed_lyrics,
-            voice="Rachel",
             voice_settings=VoiceSettings(
-                stability=0.5,
-                similarity_boost=0.75,
-                style=0.5,
+                stability=0.4,
+                similarity_boost=0.8,
+                style=0.7,  
                 use_speaker_boost=True
-            ),
-            model="eleven_multilingual_v2"
+            )
         )
         
-        audio_bytes = b"".join(response)
+        # Convert audio generator to bytes
+        audio_bytes = b"".join(audio)
+        
+        # Encode to base64
         audio_base64 = base64.b64encode(audio_bytes).decode('utf-8')
         
-        return f"✅ Song generated!\n🎵 Lyrics: {lyrics[:50]}...\n🔗 Audio: data:audio/mpeg;base64,{audio_base64[:100]}..."
+        return f"✅ Song generated!\n🎵 Lyrics: {lyrics[:50]}...\n📊 Size: {len(audio_bytes)} bytes\n🔗 Audio: data:audio/mpeg;base64,{audio_base64}"
         
     except Exception as e:
         return f"❌ Error: {type(e).__name__}: {str(e)}"
